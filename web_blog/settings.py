@@ -1,7 +1,9 @@
 from pathlib import Path
-import os
+import os, sys
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+sys.path.insert(0, os.path.join(BASE_DIR, 'web_blog', 'apps'))
 
 SECRET_KEY = '--- a secret key was there ---'
 
@@ -37,7 +39,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR, 'blog', 'templates'),
+            os.path.join(BASE_DIR, 'web_blog', 'templates'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -92,7 +94,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'blog', 'static')
+    os.path.join(BASE_DIR, 'web_blog', 'static')
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
