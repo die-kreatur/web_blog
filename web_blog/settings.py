@@ -98,8 +98,12 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'web_blog', 'static')
 ]
 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'web_blog', 'media')
+MEDIA_URL = '/media/'
+
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = 'blog-home'
+LOGIN_URL = 'login'
