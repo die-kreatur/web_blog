@@ -1,0 +1,31 @@
+{% extends "blog/base.html" %}
+
+{% block content %}
+    <h1>Blog members</h1>
+    {% for member in members %}
+        <article class="media content-section">
+            <img class="rounded-circle article-img" src="{{ member.profile.image.url }}">
+            <div class="media-body">
+                <h5><a href="{% url 'user-posts' member.username %}" class="article-title">{{ member.username }}</a></h5>
+                {% if user.is_authenticated %}
+                    <p class="text-muted">{{ member.first_name }} {{ member.last_name }}</p>
+                    <p class="text-muted">{{ member.email }}</p>
+                {% endif %}
+            </div>
+        </article>
+    {% endfor %}
+
+    {% if is_paginated %}
+        
+        {% if page_obj.has_previous %}
+            <a href="?page=1" class="btn btn-outline-info mb-4">First</a>
+            <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-info mb-4">Previous</a>
+        {% endif %}
+
+        {% if page_obj.has_next %}    
+            <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-info mb-4">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages}}" class="btn btn-outline-info mb-4">Last</a>
+        {% endif %}
+        
+    {% endif %}
+{% endblock %}

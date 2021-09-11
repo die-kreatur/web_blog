@@ -1,24 +1,11 @@
 {% extends "blog/base.html" %}
 
 {% block content %}
-    <article class="media content-section">
-        <div class="media">
-            <img class="rounded-circle account-img" src="{{ author_profile.profile.image.url }}">
-            <div class="media-body">
-                <h2 class="account-heading">{{ author_profile }}</h2>
-                {% if user.is_authenticated %}
-                    <h4 class="text-secondary">{{ author_profile.first_name }} {{ author_profile.last_name }}</h4>
-                    <p class="text-secondary">{{ author_profile.email }}</p>
-                {% else %}
-                    <p class="text-muted">You have to be logged in to watch {{ author_profile }}'s email and real name if it's provided.</p>
-                {% endif %}
-            </div>
-        </div>
-    </article>
-    <h2 class="mb-3">{{ view.kwargs.username }} has {{ page_obj.paginator.count }} post(s)</h2>
-    {% for post in posts %}
+    <h1>Latest posts</h1>
+    {% for post in object_list %}
         <article class="media content-section">
-            <div class="media-body ml-2">
+            <img class="rounded-circle article-img" src="{{ post.author.profile.image.url }}">
+            <div class="media-body">
                 <div class="article-metadata">
                     <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author }}</a>
                     <small class="text-muted">{{ post.date_posted|date:"F d, Y" }}</small>

@@ -3,21 +3,27 @@ from django.contrib.auth.models import User
 from django.views.generic import (
     ListView, DetailView,
     CreateView, UpdateView,
-    DeleteView)
+    DeleteView
+)
 from django.contrib.auth.mixins import (
-    LoginRequiredMixin, UserPassesTestMixin)
+    LoginRequiredMixin, UserPassesTestMixin
+)
+from django.views.generic.base import TemplateView
 from .models import Post
 
-def home(request):
-    context = {
-        'posts': Post.objects.all()
-    }
-    return render(request, 'blog/home.html', context)
 
-class PostListView(ListView):
-    model = Post
+class HomePageView(TemplateView):
     template_name = 'blog/home.html'
-    context_object_name = 'posts'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['admin'] = User.objects.get(username='Admin')
+        return context
+
+
+class LatestPostView(ListView):
+    model = Post
+    template_name = 'blog/latest_posts.html'
     ordering = ['-date_posted']
     paginate_by = 5
 
@@ -31,6 +37,12 @@ class UserPostListView(ListView):
     def get_queryset(self):
         user = get_object_or_404(User, username=self.kwargs.get('username'))
         return Post.objects.filter(author=user).order_by('-date_posted')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = User.objects.get(username=self.kwargs.get('username'))
+        context['author_profile'] = user
+        return context
 
 
 class PostDetailView(DetailView):
