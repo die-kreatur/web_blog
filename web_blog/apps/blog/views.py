@@ -48,6 +48,12 @@ class UserPostListView(ListView):
 class PostDetailView(DetailView):
     model = Post
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        post = Post.objects.get(id=self.kwargs.get('pk'))
+        context['comments'] = Comment.objects.filter(post=post)
+        return context
+
 
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
@@ -79,6 +85,15 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         post = self.get_object()
         return self.request.user == post.author
         
+
+class CommentCreateView(LoginRequiredMixin, CreateView):
+    model = Comment
+    fields = ['comment_text']
+
+    def form_valid(self, form):
+        form.instance.comment_author = self.request.user
+        return super().form_valid(form)
+
 
 def about(request):
     return render(request, 'blog/about.html')
