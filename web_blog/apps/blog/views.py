@@ -9,7 +9,7 @@ from django.contrib.auth.mixins import (
     LoginRequiredMixin, UserPassesTestMixin
 )
 from django.views.generic.base import TemplateView
-from .models import Post
+from .models import Post, Comment
 
 
 class HomePageView(TemplateView):

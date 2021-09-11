@@ -24,3 +24,6 @@ class Comment(models.Model):
     date_commented = models.DateTimeField(default=timezone.now)
     comment_text = models.TextField()
     
+    def __str__(self):
+        return f"Comment of '{self.post}' post"
+        
