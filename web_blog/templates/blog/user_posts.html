@@ -15,7 +15,7 @@
             </div>
         </div>
     </article>
-    <h2 class="mb-3">{{ view.kwargs.username }} has {{ page_obj.paginator.count }} post(s)</h2>
+    <h2 class="mb-3">{{ author_profile.username }} has {{ page_obj.paginator.count }} post(s)</h2>
     {% for post in posts %}
         <article class="media content-section">
             <div class="media-body ml-2">

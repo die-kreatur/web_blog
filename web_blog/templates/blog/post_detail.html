@@ -11,6 +11,10 @@
             <h2 class="article-title">{{ object.title }}</h2>
             <p class="article-content">{{ object.content }}</p>
             <div>
+                {% if user.is_authenticated %}
+                    <br>
+                    <a class="btn btn-outline-info btn-sm" href="{% url 'add-comment' object.id %}">Leave comment</a>
+                {% endif %}
                 {% if object.author == user %}
                     <a class="btn btn-outline-secondary btn-sm" href="{% url 'post-update' object.id %}">Update</a>
                     <a class="btn btn-outline-danger btn-sm" href="{% url 'post-delete' object.id %}">Delete</a>
@@ -19,19 +23,21 @@
         </div>
     </article>
     
-    <h3>Comments</h3>
-    {% for comment in comments %}
-        <article class="media content-section">
-            <img class="rounded-circle article-img" src="{{ comment.comment_author.profile.image.url }}">
-            <div class="media-body">
-                <div class="article-metadata">
-                    <a class="mr-2" href="{% url 'user-posts' comment.comment_author.username %}">{{ comment.comment_author }}</a>
-                    <small class="text-muted">{{ comment.date_commented|date:"F d, Y" }}</small>
+    {% if comments %}
+        <h3>Comments</h3>
+        {% for comment in comments %}
+            <article class="media content-section">
+                <img class="rounded-circle article-img" src="{{ comment.comment_author.profile.image.url }}">
+                <div class="media-body">
+                    <div class="article-metadata">
+                        <a class="mr-2" href="{% url 'user-posts' comment.comment_author.username %}">{{ comment.comment_author }}</a>
+                        <small class="text-muted">{{ comment.date_commented|date:"F d, Y" }}</small>
+                    </div>
+                    <p class="article-content">{{ comment.comment_text }}</p>
                 </div>
-                <p class="article-content">{{ comment.comment_text }}</p>
-            </div>
-        </article>
-    {% endfor %}
+            </article>
+        {% endfor %}
+    {% endif %}
 
     {% if is_paginated %}
         

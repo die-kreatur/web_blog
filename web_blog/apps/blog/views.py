@@ -1,5 +1,5 @@
-from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+from django.urls import reverse_lazy
 from django.contrib.auth.models import User
 from django.views.generic import (
     ListView, DetailView,
@@ -85,7 +85,7 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Post
-    success_url = '/'
+    success_url = reverse_lazy('latest-posts')
 
     def test_func(self):
         post = self.get_object()
@@ -97,6 +97,12 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
     fields = ['comment_text']
 
     def form_valid(self, form):
-        form.instance.post_id = self.kwargs.get('pk')
+        form.instance.post_id = self.kwargs.get('post_id')
         form.instance.comment_author = self.request.user
         return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        post = Post.objects.get(id=self.kwargs.get('post_id'))
+        context['post'] = post
+        return context
