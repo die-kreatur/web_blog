@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponseRedirect
 from django.contrib.auth.models import User
 from django.views.generic import (
     ListView, DetailView,
@@ -19,6 +20,10 @@ class HomePageView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['admin'] = User.objects.get(username='Admin')
         return context
+
+
+class AboutView(TemplateView):
+    template_name = 'blog/about.html'
 
 
 class LatestPostView(ListView):
@@ -51,7 +56,8 @@ class PostDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         post = Post.objects.get(id=self.kwargs.get('pk'))
-        context['comments'] = Comment.objects.filter(post=post)
+        context['comments'] = Comment.objects.filter(post=post).\
+            order_by('-date_commented')
         return context
 
 
@@ -91,9 +97,6 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
     fields = ['comment_text']
 
     def form_valid(self, form):
+        form.instance.post_id = self.kwargs.get('pk')
         form.instance.comment_author = self.request.user
         return super().form_valid(form)
-
-
-def about(request):
-    return render(request, 'blog/about.html')

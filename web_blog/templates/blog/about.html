@@ -1,5 +1,18 @@
 {% extends "blog/base.html" %}
 
 {% block content %}
-    <h1>About</h1>
+    <h1 class="article-title">About</h1>
+    <article class="media content-section">
+        <div class="media-body">
+            <h3 class="article-title">What is that blog?</h3>
+            <p class="article-content">
+                Acctually it's not a real blog that I'm going to use. I created it as a pet-project to learn some Python Django features I hadn't known.
+                Major part of the blog is based on <a href="https://www.youtube.com/playlist?list=PL-osiE80TeTtoQCKZ03TU5fNfx2UY6U4p" target="_blank">youtube Django tutorials</a>, but I also provided new functioality such as comment sections and members' list.
+            </p><br>
+            <h3 class="article-title">Source code</h3>
+            <p class="article-content">
+                The <a href="https://github.com/die-kreatur/web_blog" target="_blank">source code</a> of the blog is available in my github repository. You are welcome to make your suggestions how to improve it. You may contact me via <em>parusmajor@list.ru</em> if you like. I'm also be happy to get invitation to an interview form potential employers and job offers :)
+            </p>
+        </div>
+    </article>
 {% endblock %}

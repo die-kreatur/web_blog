@@ -19,11 +19,31 @@
         </div>
     </article>
     
-    <article class="media content-section">
-        <div class="media-body">
-            <div class="article-metadata">
-                <h3>Comments</h3>
+    <h3>Comments</h3>
+    {% for comment in comments %}
+        <article class="media content-section">
+            <img class="rounded-circle article-img" src="{{ comment.comment_author.profile.image.url }}">
+            <div class="media-body">
+                <div class="article-metadata">
+                    <a class="mr-2" href="{% url 'user-posts' comment.comment_author.username %}">{{ comment.comment_author }}</a>
+                    <small class="text-muted">{{ comment.date_commented|date:"F d, Y" }}</small>
+                </div>
+                <p class="article-content">{{ comment.comment_text }}</p>
             </div>
-        </div>
-    </article>
+        </article>
+    {% endfor %}
+
+    {% if is_paginated %}
+        
+        {% if page_obj.has_previous %}
+            <a href="?page=1" class="btn btn-outline-info mb-4">First</a>
+            <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-info mb-4">Previous</a>
+        {% endif %}
+
+        {% if page_obj.has_next %}    
+            <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-info mb-4">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages}}" class="btn btn-outline-info mb-4">Last</a>
+        {% endif %}
+        
+    {% endif %}
 {% endblock %}
