@@ -34,6 +34,11 @@
                         <small class="text-muted">{{ comment.date_commented|date:"F d, Y" }}</small>
                     </div>
                     <p class="article-content">{{ comment.comment_text }}</p>
+                    {% if comment.comment_author == user %}
+                        <br>
+                        <a class="btn btn-outline-secondary btn-sm" href="{% url 'update-comment' comment.post_id comment.id %}">Update</a>
+                        <a class="btn btn-outline-danger btn-sm" href="{% url 'delete-comment' comment.post_id comment.id %}">Delete</a>
+                    {% endif %}
                 </div>
             </article>
         {% endfor %}

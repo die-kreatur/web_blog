@@ -1,0 +1,40 @@
+{% extends "blog/base.html" %}
+
+{% block content %}
+    <article class="media content-section">
+        <img class="rounded-circle article-img" src="{{ post.author.profile.image.url }}">
+        <div class="media-body">
+            <div class="article-metadata">
+                <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author }}</a>
+                <small class="text-muted">{{ post.date_posted|date:"F d, Y" }}</small>
+            </div>
+            <h2 class="article-title">{{ post.title }}</h2>
+            <p class="article-content">{{ post.content }}</p>
+        </div>
+    </article>
+
+    <div class="content-section">
+        <form method="POST">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend class="border-dottom mb-4">Delete comment</legend>
+                <h2>Are you sure that you want to delete the comment below?</h2>
+            </fieldset>
+            <div class="form-group">
+                <button class="btn btn-outline-danger" type="submit">Yes, delete</button>
+                <a class="btn btn-outline-secondary" href="{% url 'post-detail' object.post_id %}">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <article class="media content-section">
+        <img class="rounded-circle article-img" src="{{ object.comment_author.profile.image.url }}">
+        <div class="media-body">
+            <div class="article-metadata">
+                <a class="mr-2" href="{% url 'user-posts' object.comment_author.username %}">{{ object.comment_author }}</a>
+                <small class="text-muted">{{ object.date_commented|date:"F d, Y" }}</small>
+            </div>
+            <p class="article-content">{{ object.comment_text }}</p>
+        </div>
+    </article>
+{% endblock %}

@@ -6,7 +6,7 @@
             {% csrf_token %}
             <fieldset class="form-group">
                 <legend class="border-dottom mb-4">Delete Post</legend>
-                <h2>Are you sure that you want to delete post "{{ object.title }}"?</h2>
+                <h2>Are you sure that you want to delete the post bellow?</h2>
             </fieldset>
             <div class="form-group">
                 <button class="btn btn-outline-danger" type="submit">Yes, delete</button>
@@ -14,4 +14,15 @@
             </div>
         </form>
     </div>
+    <article class="media content-section">
+        <img class="rounded-circle article-img" src="{{ object.author.profile.image.url }}">
+        <div class="media-body">
+            <div class="article-metadata">
+                <a class="mr-2" href="{% url 'user-posts' object.author.username %}">{{ object.author }}</a>
+                <small class="text-muted">{{ object.date_posted|date:"F d, Y" }}</small>
+            </div>
+            <h2 class="article-title">{{ object.title }}</h2>
+            <p class="article-content">{{ object.content }}</p>
+        </div>
+    </article>
 {% endblock %}

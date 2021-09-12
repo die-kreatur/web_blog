@@ -1,3 +1,4 @@
+from typing import KeysView
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.contrib.auth.models import User
@@ -106,3 +107,41 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         post = Post.objects.get(id=self.kwargs.get('post_id'))
         context['post'] = post
         return context
+
+
+class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Comment
+    fields = ['comment_text']
+
+    def form_valid(self, form):
+        form.instance.post_id = self.kwargs.get('post_id')
+        form.instance.comment_author = self.request.user
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        post = Post.objects.get(id=self.kwargs.get('post_id'))
+        context['post'] = post
+        return context
+
+    def test_func(self):
+        comment = self.get_object()
+        return self.request.user == comment.comment_author
+
+
+class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Comment
+
+    def test_func(self):
+        comment = self.get_object()
+        return self.request.user == comment.comment_author
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        post = Post.objects.get(id=self.kwargs.get('post_id'))
+        context['post'] = post        
+        return context
+
+    def get_success_url(self):
+        post = self.get_object().post_id
+        return reverse_lazy('post-detail', kwargs={'pk': post})
