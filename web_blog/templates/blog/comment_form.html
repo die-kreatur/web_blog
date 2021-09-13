@@ -18,7 +18,7 @@
         <form method="POST">
             {% csrf_token %}
             <fieldset class="form-group">
-                <legend class="border-dottom mb-4">Add comment, {{ user.username }}</legend>
+                <legend class="border-dottom mb-4">Your comment, {{ user.username }}</legend>
                 {{ form|crispy }}
             </fieldset>
             <div class="form-group">
