@@ -5,6 +5,7 @@ from .forms import UserRegisterForm, UserUpdateForm, ProfileUpdateForm
 from django.contrib.auth.models import User
 
 def register(request):
+    """Register of a new user"""
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
         if form.is_valid():
@@ -22,6 +23,7 @@ def register(request):
 
 @login_required
 def profile(request):
+    """Profile view of logged in users"""
     if request.method == 'POST':
         user_form = UserUpdateForm(
             request.POST, instance=request.user)
@@ -47,6 +49,7 @@ def profile(request):
 
 
 def users_list(request):
+    """List of all blog memebers"""
     members = User.objects.all()
     current = request.user
 
