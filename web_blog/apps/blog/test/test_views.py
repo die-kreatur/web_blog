@@ -1,3 +1,4 @@
+from django.http import request
 from django.test import TestCase, RequestFactory, Client
 from django.urls import reverse
 from django.contrib.auth.models import User, AnonymousUser
@@ -51,9 +52,14 @@ class TestUserPostListView(TestCase):
             email='testuser@example.com',
             password='fhhewo87539275'
         )
-        self.post = Post.objects.create(
+        self.post1 = Post.objects.create(
             title='test_post',
             content='blabla',
+            author=self.user
+        )
+        self.post2 = Post.objects.create(
+            title='test_post2',
+            content='blablablabla',
             author=self.user
         )
         
@@ -62,9 +68,56 @@ class TestUserPostListView(TestCase):
         url = reverse('user-posts', kwargs={'username': self.user.username})
         request = self.factory.get(url)
         request.user = AnonymousUser()
-        
+
         view = UserPostListView()
-        view.setup(request)
+        view.setup(request, username=self.user.username)
 
         queryset = view.get_queryset()
-        self.assertIn(self.post, queryset)
+        result = Post.objects.filter(author=self.user).order_by('-date_posted')
+        self.assertQuerysetEqual(queryset, result)
+
+    def test_if_author_in_context(self):
+        """Testing if author_profile is in context dict"""
+        url = reverse('user-posts', kwargs={'username': self.user.username})
+        request = self.factory.get(url)
+        request.user = AnonymousUser()
+
+        response = UserPostListView.as_view()\
+            (request, username=self.user.username)
+        
+        self.assertIsInstance(response.context_data, dict)
+        self.assertIn('author_profile', response.context_data)
+
+
+class TestPostDetailView(TestCase):
+    """Testing PostDetailView"""
+    def setUp(self):
+
+        self.factory = RequestFactory()
+
+        self.user = User.objects.create_user(
+            username='test_user',
+            email='testuser@example.com',
+            password='fhhewo87539275'
+        )
+        self.post = Post.objects.create(
+            title='test_post',
+            content='blabla',
+            author=self.user
+        )
+        self.comment1 = Comment.objects.create(
+            post = self.post,
+            comment_author = self.user,
+            comment_text = 'lololol'
+        )
+
+    def test_if_comments_displayed_under_post(self):
+        url = reverse('post-detail', kwargs={'pk': self.post.id})
+        request = self.factory.get(url)
+        request.user = AnonymousUser()
+
+        response = PostDetailView.as_view()\
+            (request, pk=self.post.id)
+        
+        self.assertIsInstance(response.context_data, dict)
+        self.assertIn('comments', response.context_data)

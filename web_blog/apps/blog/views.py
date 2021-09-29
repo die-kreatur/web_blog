@@ -41,9 +41,8 @@ class UserPostListView(ListView):
 
     def get_queryset(self):
         """Dynamic filtering to get posts by a chosen user"""
-        queryset = super().get_queryset()
         user = get_object_or_404(User, username=self.kwargs.get('username'))
-        return queryset.filter(author=user).order_by('-date_posted')
+        return Post.objects.filter(author=user).order_by('-date_posted')
 
     def get_context_data(self, **kwargs):
         """Adding some information about selected user to the template"""
