@@ -1,4 +1,3 @@
-from typing import KeysView
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.contrib.auth.models import User
@@ -18,12 +17,6 @@ from .models import Post, Comment
 class HomePageView(TemplateView):
     """View to display home page"""
     template_name = 'blog/home.html'
-
-    def get_context_data(self, **kwargs):
-        """Adding information about admin to display in home page"""
-        context = super().get_context_data(**kwargs)
-        context['admin'] = User.objects.get(username='Admin')
-        return context
 
 
 class AboutView(TemplateView):

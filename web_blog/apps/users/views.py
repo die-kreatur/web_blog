@@ -51,8 +51,7 @@ def profile(request):
 def users_list(request):
     """List of all blog memebers"""
     members = User.objects.all()
-    current = request.user
 
     return render(request, 'users/users_list.html',
-        {'members': members, 'current': current}
+        {'members': members}
     )
