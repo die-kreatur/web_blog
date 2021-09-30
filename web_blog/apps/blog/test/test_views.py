@@ -1,4 +1,4 @@
-from django.http import request
+from django.core.exceptions import PermissionDenied
 from django.test import TestCase, RequestFactory, Client
 from django.urls import reverse
 from django.contrib.auth.models import User, AnonymousUser
@@ -112,6 +112,7 @@ class TestPostDetailView(TestCase):
         )
 
     def test_if_comments_displayed_under_post(self):
+        """Testing get_context_data function"""
         url = reverse('post-detail', kwargs={'pk': self.post.id})
         request = self.factory.get(url)
         request.user = AnonymousUser()
@@ -121,3 +122,58 @@ class TestPostDetailView(TestCase):
         
         self.assertIsInstance(response.context_data, dict)
         self.assertIn('comments', response.context_data)
+
+
+class TestPostCreateView(TestCase):
+    """Testing PostCreateView"""
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.url = reverse('post-create')
+
+    def test_create_post_by_anonymous(self):
+        """Testing if we get redirect if anonymous user tries to create a new post"""        
+        request = self.factory.post(self.url)
+        request.user = AnonymousUser()
+
+        # if Anonymous tries to create post he should be 
+        # redirected to the login page
+        response = PostCreateView.as_view()(request)
+        self.assertEqual(response.status_code, 302)
+
+
+class TestPostUpdateView(TestCase):
+    """Testing PostUpdateView"""
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = User.objects.create_user(
+            username='test_user',
+            email='testuser@example.com',
+            password='fhhewo87539275'
+        )
+        self.author = User.objects.create_user(
+            username='testautor',
+            email='testauthor@example.com',
+            password='fhhedfsdljru7492'
+        )
+        self.post = Post.objects.create(
+            title='test', content='blabla', author=self.author
+        )
+        self.url = reverse('post-update', kwargs={'pk': self.post.id})
+
+    def test_update_post_by_anonymous(self):
+        """Testing if updating posts is forbidden for not author"""
+        request = self.factory.get(self.url)
+        request.user = AnonymousUser()
+        response = PostUpdateView.as_view()(request, pk=self.post.id)
+
+        # if Anonymous tries to update post he should be 
+        # redirected to the login page.
+        self.assertEqual(response.status_code, 302)
+
+    def test_update_post_by_not_author(self):
+        """Testing if updating posts is forbidden for not author"""
+        request = self.factory.get(self.url)
+        request.user = self.user
+
+        with self.assertRaises(PermissionDenied):
+            PostUpdateView.as_view()(request, pk=self.post.id)
