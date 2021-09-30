@@ -1,4 +1,5 @@
 from django.core.exceptions import PermissionDenied
+from django.http import request, response
 from django.test import TestCase, RequestFactory, Client
 from django.urls import reverse
 from django.contrib.auth.models import User, AnonymousUser
@@ -129,6 +130,11 @@ class TestPostCreateView(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.url = reverse('post-create')
+        self.user = User.objects.create_user(
+            username='test_user',
+            email='testuser@example.com',
+            password='fhhewo87539275'
+        )
 
     def test_create_post_by_anonymous(self):
         """Testing if we get redirect if anonymous user tries to create a new post"""        
@@ -139,6 +145,15 @@ class TestPostCreateView(TestCase):
         # redirected to the login page
         response = PostCreateView.as_view()(request)
         self.assertEqual(response.status_code, 302)
+
+    def test_create_post_by_user(self):
+        request = self.factory.post(self.url,
+            {'title': 'test', 'content': 'blabla'}
+        )
+        request.user = self.user
+        PostCreateView.as_view()(request)
+        
+        self.assertIn(Post.objects.get(title='test'), Post.objects.all())
 
 
 class TestPostUpdateView(TestCase):
@@ -177,3 +192,64 @@ class TestPostUpdateView(TestCase):
 
         with self.assertRaises(PermissionDenied):
             PostUpdateView.as_view()(request, pk=self.post.id)
+
+    def test_update_by_author(self):
+        """Testing if author can update post properly"""
+        request = self.factory.post(self.url,
+        {'title': 'test_update', 'content': 'content_update'})
+        request.user = self.author
+
+        response = PostUpdateView.as_view()(request, pk=self.post.id)
+        self.assertEqual(response.status_code, 302)
+
+        self.post.refresh_from_db()
+        self.assertEqual(self.post.title, 'test_update')
+
+
+class TestPostDeleteView(TestCase):
+    """Test PostDeleteView"""
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='test_user',
+            email='testuser@example.com',
+            password='fhhewo87539275'
+        )
+        self.author = User.objects.create_user(
+            username='testautor',
+            email='testauthor@example.com',
+            password='fhhedfsdljru7492'
+        )
+        self.post = Post.objects.create(
+            title='to_delete',
+            content='blabla',
+            author=self.author
+        )
+        self.factory = RequestFactory()
+        self.url = reverse('post-delete', kwargs={'pk': self.post.id})
+
+    def test_delete_post_by_anonymous(self):
+        """Testing if deleting posts is forbidden for not author"""
+        request = self.factory.get(self.url)
+        request.user = AnonymousUser()
+        response = PostDeleteView.as_view()(request, pk=self.post.id)
+
+        # if Anonymous tries to delete post he should be 
+        # redirected to the login page.
+        self.assertEqual(response.status_code, 302)
+
+    def test_delete_post_by_not_author(self):
+        """Testing if deleting posts is forbidden for not author"""
+        request = self.factory.get(self.url)
+        request.user = self.user
+
+        with self.assertRaises(PermissionDenied):
+            PostDeleteView.as_view()(request, pk=self.post.id)
+
+    def test_delete_post_by_author(self):
+        """Testing if the author is able to delete his post"""
+        request = self.factory.delete(self.url)
+        request.user = self.author
+
+        response = PostDeleteView.as_view()(request, pk=self.post.id)
+        self.assertEquals(response.status_code, 302)
+        self.assertNotIn(self.post, Post.objects.all())
