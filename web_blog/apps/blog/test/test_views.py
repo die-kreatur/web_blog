@@ -1,17 +1,43 @@
 from django.core.exceptions import PermissionDenied
-from django.http import request, response
-from django.test import TestCase, RequestFactory, Client
+from django.test import TestCase, RequestFactory
 from django.urls import reverse
 from django.contrib.auth.models import User, AnonymousUser
 from .. views import *
+
+
+def _test_user(username):
+    """Creating test user to run tests"""
+    user = User.objects.create_user(
+        username=username,
+        email='test@example.com',
+        password='testing12345'
+    )
+    return user
+
+def _test_post(title, content, author):
+    """Creating test post by some user to run test"""
+    post = Post.objects.create(
+        title=title,
+        content=content,
+        author=author
+    )
+    return post
+
+def _test_comment(post, author, text):
+    """Creating test comment to run tests"""
+    comment = Comment.objects.create(
+        post=post,
+        comment_author=author,
+        comment_text=text
+    )
+    return comment
 
 
 class TestHomePage(TestCase):
     """Test HomePageView"""
     def test_get_home_page(self):
         """Checking if the home page is displayed properly"""
-        client = Client()
-        response = client.get(reverse('blog-home'))
+        response = self.client.get(reverse('blog-home'))
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'blog/home.html')
@@ -21,8 +47,7 @@ class TestAboutView(TestCase):
     """Test AboutPageView"""
     def test_get_about_page(self):
         """Checking if the about page is displayed properly"""
-        client = Client()
-        response = client.get(reverse('blog-about'))
+        response = self.client.get(reverse('blog-about'))
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'blog/about.html')
@@ -32,8 +57,7 @@ class TestLatestPostView(TestCase):
     """Test LatestPostView"""
     def test_get_latest_posts(self):
         """Checking if the page with latest post is displayed properly"""
-        client = Client()
-        response = client.get(reverse('latest-posts'))
+        response = self.client.get(reverse('latest-posts'))
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'blog/latest_posts.html')
@@ -44,30 +68,15 @@ class TestUserPostListView(TestCase):
 
     def setUp(self):
         """Creating a test user and his post to see if the certain
-        user's page with posts is displayed properly"""
-
-        self.factory = RequestFactory()
-        
-        self.user = User.objects.create_user(
-            username='test_user',
-            email='testuser@example.com',
-            password='fhhewo87539275'
-        )
-        self.post1 = Post.objects.create(
-            title='test_post',
-            content='blabla',
-            author=self.user
-        )
-        self.post2 = Post.objects.create(
-            title='test_post2',
-            content='blablablabla',
-            author=self.user
-        )
+        user's page with posts is displayed properly"""       
+        self.user = _test_user('test_user')
+        self.post = _test_post('test_post', 'blabla', self.user)
+        self.url = reverse('user-posts',
+            kwargs={'username': self.user.username})
         
     def test_get_queryset(self):
         """Testing get_queryset function"""
-        url = reverse('user-posts', kwargs={'username': self.user.username})
-        request = self.factory.get(url)
+        request = RequestFactory().get(self.url)
         request.user = AnonymousUser()
 
         view = UserPostListView()
@@ -79,8 +88,7 @@ class TestUserPostListView(TestCase):
 
     def test_if_author_in_context(self):
         """Testing if author_profile is in context dict"""
-        url = reverse('user-posts', kwargs={'username': self.user.username})
-        request = self.factory.get(url)
+        request = RequestFactory().get(self.url)
         request.user = AnonymousUser()
 
         response = UserPostListView.as_view()\
@@ -92,30 +100,16 @@ class TestUserPostListView(TestCase):
 
 class TestPostDetailView(TestCase):
     """Testing PostDetailView"""
+
     def setUp(self):
-
-        self.factory = RequestFactory()
-
-        self.user = User.objects.create_user(
-            username='test_user',
-            email='testuser@example.com',
-            password='fhhewo87539275'
-        )
-        self.post = Post.objects.create(
-            title='test_post',
-            content='blabla',
-            author=self.user
-        )
-        self.comment1 = Comment.objects.create(
-            post = self.post,
-            comment_author = self.user,
-            comment_text = 'lololol'
-        )
+        self.user = _test_user('test_user')
+        self.post = _test_post('test_post', 'blabla', self.user)
+        self.comment = _test_comment(self.post, self.user, 'lololo')
 
     def test_if_comments_displayed_under_post(self):
         """Testing get_context_data function"""
         url = reverse('post-detail', kwargs={'pk': self.post.id})
-        request = self.factory.get(url)
+        request = RequestFactory().get(url)
         request.user = AnonymousUser()
 
         response = PostDetailView.as_view()\
@@ -127,18 +121,14 @@ class TestPostDetailView(TestCase):
 
 class TestPostCreateView(TestCase):
     """Testing PostCreateView"""
+    
     def setUp(self):
-        self.factory = RequestFactory()
         self.url = reverse('post-create')
-        self.user = User.objects.create_user(
-            username='test_user',
-            email='testuser@example.com',
-            password='fhhewo87539275'
-        )
+        self.user = _test_user('test_user')
 
     def test_create_post_by_anonymous(self):
         """Testing if we get redirect if anonymous user tries to create a new post"""        
-        request = self.factory.post(self.url)
+        request = RequestFactory().post(self.url)
         request.user = AnonymousUser()
 
         # if Anonymous tries to create post he should be 
@@ -147,7 +137,7 @@ class TestPostCreateView(TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_create_post_by_user(self):
-        request = self.factory.post(self.url,
+        request = RequestFactory().post(self.url,
             {'title': 'test', 'content': 'blabla'}
         )
         request.user = self.user
@@ -158,26 +148,16 @@ class TestPostCreateView(TestCase):
 
 class TestPostUpdateView(TestCase):
     """Testing PostUpdateView"""
+
     def setUp(self):
-        self.factory = RequestFactory()
-        self.user = User.objects.create_user(
-            username='test_user',
-            email='testuser@example.com',
-            password='fhhewo87539275'
-        )
-        self.author = User.objects.create_user(
-            username='testautor',
-            email='testauthor@example.com',
-            password='fhhedfsdljru7492'
-        )
-        self.post = Post.objects.create(
-            title='test', content='blabla', author=self.author
-        )
+        self.user = _test_user('test_user')
+        self.author = _test_user('test_author')
+        self.post = _test_post('test_post', 'blabla', self.author)
         self.url = reverse('post-update', kwargs={'pk': self.post.id})
 
     def test_update_post_by_anonymous(self):
         """Testing if updating posts is forbidden for not author"""
-        request = self.factory.get(self.url)
+        request = RequestFactory().get(self.url)
         request.user = AnonymousUser()
         response = PostUpdateView.as_view()(request, pk=self.post.id)
 
@@ -187,7 +167,7 @@ class TestPostUpdateView(TestCase):
 
     def test_update_post_by_not_author(self):
         """Testing if updating posts is forbidden for not author"""
-        request = self.factory.get(self.url)
+        request = RequestFactory().get(self.url)
         request.user = self.user
 
         with self.assertRaises(PermissionDenied):
@@ -195,7 +175,7 @@ class TestPostUpdateView(TestCase):
 
     def test_update_by_author(self):
         """Testing if author can update post properly"""
-        request = self.factory.post(self.url,
+        request = RequestFactory().post(self.url,
         {'title': 'test_update', 'content': 'content_update'})
         request.user = self.author
 
@@ -208,28 +188,16 @@ class TestPostUpdateView(TestCase):
 
 class TestPostDeleteView(TestCase):
     """Test PostDeleteView"""
+
     def setUp(self):
-        self.user = User.objects.create_user(
-            username='test_user',
-            email='testuser@example.com',
-            password='fhhewo87539275'
-        )
-        self.author = User.objects.create_user(
-            username='testautor',
-            email='testauthor@example.com',
-            password='fhhedfsdljru7492'
-        )
-        self.post = Post.objects.create(
-            title='to_delete',
-            content='blabla',
-            author=self.author
-        )
-        self.factory = RequestFactory()
+        self.user = _test_user('test_user')
+        self.author = _test_user('test_author')
+        self.post = _test_post('test_post', 'blabla', self.author)
         self.url = reverse('post-delete', kwargs={'pk': self.post.id})
 
     def test_delete_post_by_anonymous(self):
         """Testing if deleting posts is forbidden for not author"""
-        request = self.factory.get(self.url)
+        request = RequestFactory().get(self.url)
         request.user = AnonymousUser()
         response = PostDeleteView.as_view()(request, pk=self.post.id)
 
@@ -239,7 +207,7 @@ class TestPostDeleteView(TestCase):
 
     def test_delete_post_by_not_author(self):
         """Testing if deleting posts is forbidden for not author"""
-        request = self.factory.get(self.url)
+        request = RequestFactory().get(self.url)
         request.user = self.user
 
         with self.assertRaises(PermissionDenied):
@@ -247,7 +215,7 @@ class TestPostDeleteView(TestCase):
 
     def test_delete_post_by_author(self):
         """Testing if the author is able to delete his post"""
-        request = self.factory.delete(self.url)
+        request = RequestFactory().delete(self.url)
         request.user = self.author
 
         response = PostDeleteView.as_view()(request, pk=self.post.id)
