@@ -1,36 +1,9 @@
 from django.core.exceptions import PermissionDenied
 from django.test import TestCase, RequestFactory
 from django.urls import reverse
-from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.auth.models import AnonymousUser
 from .. views import *
-
-
-def _test_user(username):
-    """Creating test user to run tests"""
-    user = User.objects.create_user(
-        username=username,
-        email='test@example.com',
-        password='testing12345'
-    )
-    return user
-
-def _test_post(title, content, author):
-    """Creating test post by some user to run test"""
-    post = Post.objects.create(
-        title=title,
-        content=content,
-        author=author
-    )
-    return post
-
-def _test_comment(post, author, text):
-    """Creating test comment to run tests"""
-    comment = Comment.objects.create(
-        post=post,
-        comment_author=author,
-        comment_text=text
-    )
-    return comment
+from .help_functions import testUser, testComment, testPost
 
 
 class TestHomePage(TestCase):
@@ -69,8 +42,8 @@ class TestUserPostListView(TestCase):
     def setUp(self):
         """Creating a test user and his post to see if the certain
         user's page with posts is displayed properly"""       
-        self.user = _test_user('test_user')
-        self.post = _test_post('test_post', 'blabla', self.user)
+        self.user = testUser('test_user')
+        self.post = testPost('test_post', self.user)
         self.url = reverse('user-posts',
             kwargs={'username': self.user.username})
         
@@ -102,9 +75,9 @@ class TestPostDetailView(TestCase):
     """Testing PostDetailView"""
 
     def setUp(self):
-        self.user = _test_user('test_user')
-        self.post = _test_post('test_post', 'blabla', self.user)
-        self.comment = _test_comment(self.post, self.user, 'lololo')
+        self.user = testUser('test_user')
+        self.post = testPost('test_post', self.user)
+        self.comment = testComment(self.post, self.user)
 
     def test_if_comments_displayed_under_post(self):
         """Testing get_context_data function"""
@@ -124,7 +97,7 @@ class TestPostCreateView(TestCase):
     
     def setUp(self):
         self.url = reverse('post-create')
-        self.user = _test_user('test_user')
+        self.user = testUser('test_user')
 
     def test_create_post_by_anonymous(self):
         """Testing if we get redirect if anonymous user tries to create a new post"""        
@@ -150,9 +123,9 @@ class TestPostUpdateView(TestCase):
     """Testing PostUpdateView"""
 
     def setUp(self):
-        self.user = _test_user('test_user')
-        self.author = _test_user('test_author')
-        self.post = _test_post('test_post', 'blabla', self.author)
+        self.user = testUser('test_user')
+        self.author = testUser('test_author')
+        self.post = testPost('test_post', self.author)
         self.url = reverse('post-update', kwargs={'pk': self.post.id})
 
     def test_update_post_by_anonymous(self):
@@ -190,9 +163,9 @@ class TestPostDeleteView(TestCase):
     """Test PostDeleteView"""
 
     def setUp(self):
-        self.user = _test_user('test_user')
-        self.author = _test_user('test_author')
-        self.post = _test_post('test_post', 'blabla', self.author)
+        self.user = testUser('test_user')
+        self.author = testUser('test_author')
+        self.post = testPost('test_post', self.author)
         self.url = reverse('post-delete', kwargs={'pk': self.post.id})
 
     def test_delete_post_by_anonymous(self):
