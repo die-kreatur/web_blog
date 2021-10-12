@@ -3,13 +3,14 @@ Full-featured web blog on Django.
 
 ## Used technologies
 
-- Django 3
+- Python 3.9
+- Django 3.2.7
 - Pillow (for managing profile images)
-- Bootstrap
-- HTML
-- CSS
+- Bootstrap4
+- HTML5
+- CSS3
 - Gmail smtp server
-- SQLite (default Django database)
+- Postgesql
 
 Design patterns including **main.css** file were borrowed from [there](https://github.com/CoreyMSchafer/code_snippets/tree/master/Django_Blog/snippets).
 
