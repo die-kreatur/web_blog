@@ -34,7 +34,5 @@ def populate_with_posts():
 
 
 if __name__ == '__main__':
-    if not User.objects.all():
-        populate_with_users()
-    if not Post.objects.all():
-        populate_with_posts()
+    populate_with_users()
+    populate_with_posts()
