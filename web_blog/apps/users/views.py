@@ -50,7 +50,7 @@ def profile(request):
 
 def users_list(request):
     """List of all blog memebers"""
-    members = User.objects.all()
+    members = User.objects.all().order_by('username')
 
     return render(request, 'users/users_list.html',
         {'members': members}
