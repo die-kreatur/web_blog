@@ -1,5 +1,7 @@
 # Django blog
-Full-featured web blog on Django.
+Full-featured Django web blog is available via [http://95.217.188.56/](http://95.217.188.56/). In case the link is expired there is a brief demonstration of blog functionality:
+
+![django_blog](django_blog.gif)
 
 ## Used technologies
 
@@ -11,6 +13,7 @@ Full-featured web blog on Django.
 - CSS3
 - Gmail smtp server
 - Postgesql
+- Ubuntu Server 21.10, Gunicorn and Nginx for deployment
 
 Design patterns including **main.css** file were borrowed from [there](https://github.com/CoreyMSchafer/code_snippets/tree/master/Django_Blog/snippets).
 
